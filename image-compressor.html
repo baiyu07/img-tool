@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能图片压缩工具 - 免费在线压缩JPG/PNG/WebP图片，保持高质量</title>
+    <meta name="description" content="智能图片压缩工具支持JPG、PNG、WebP格式压缩，可调节压缩质量，批量处理多张图片，压缩前后对比，本地处理保护隐私，完全免费。">
+    <meta name="keywords" content="图片压缩, 在线压缩图片, JPG压缩, PNG压缩, WebP压缩, 批量压缩图片">
+    <link rel="canonical" href="https://yourdomain.com/image-compressor.html">
+    <meta name="robots" content="index, follow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <!-- 结构化数据 -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ItemPage",
+        "name": "智能图片压缩工具",
+        "description": "在线压缩JPG、PNG、WebP图片，保持高质量，批量处理",
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "首页",
+                    "item": "https://yourdomain.com/index.html"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "图片压缩工具",
+                    "item": "https://yourdomain.com/image-compressor.html"
+                }
+            ]
+        }
+    }
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#6366F1'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .upload-area {
+                transition: all 0.3s ease;
+            }
+            .upload-area:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+            .image-card {
+                transition: all 0.3s ease;
+            }
+            .image-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+            .download-option {
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            .download-option:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <!-- 页头导航 -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                        <i class="fa fa-cogs text-white text-lg"></i>
+                    </div>
+                    <a href="index.html" class="text-xl font-bold text-gray-900 hover:text-primary transition-colors">智能图片工具箱</a>
+                </div>
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="index.html" class="text-gray-600 hover:text-primary transition-colors">首页</a>
+                    <a href="image-compressor.html" class="text-primary font-medium">图片压缩</a>
+                    <a href="batch-renamer.html" class="text-gray-600 hover:text-primary transition-colors">批量改名</a>
+                    <a href="format-converter.html" class="text-gray-600 hover:text-primary transition-colors">格式转换</a>
+                </nav>
+                <button class="md:hidden text-gray-600" aria-label="菜单">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 页面标题 -->
+        <section class="mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">图片压缩工具</h1>
+            <p class="text-gray-600 max-w-3xl">高效压缩JPG、PNG、WebP等格式图片，在保持高质量的同时大幅减小文件大小，支持批量处理，所有操作在本地完成，保护您的隐私。</p>
+        </section>
+
+        <!-- 上传区域 -->
+        <section class="mb-10">
+            <div id="uploadArea" class="upload-area border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer bg-white/70 hover:border-primary transition-all duration-300">
+                <div class="space-y-4">
+                    <div class="w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full flex items-center justify-center mx-auto">
+                        <i class="fa fa-cloud-upload text-3xl text-primary" aria-label="上传图标"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h2 class="text-xl font-semibold text-gray-900">点击或拖拽上传图片</h2>
+                        <p class="text-gray-600">支持JPG、PNG、WebP格式，单张不超过10MB</p>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
+                        <span class="bg-gray-100 px-3 py-1 rounded-full">JPG</span>
+                        <span class="bg-gray-100 px-3 py-1 rounded-full">PNG</span>
+                        <span class="bg-gray-100 px-3 py-1 rounded-full">WebP</span>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" multiple class="hidden" aria-label="选择图片文件">
+                </div>
+            </div>
+        </section>
+
+        <!-- 上传图片预览 -->
+        <section id="uploadedImagesSection" class="mb-10 hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                            <i class="fa fa-images text-primary mr-3" aria-hidden="true"></i>
+                            已上传图片
+                            <span id="imageCountBadge" class="ml-3 bg-primary text-white text-sm px-2 py-1 rounded-full">0张</span>
+                        </h2>
+                        <p class="text-gray-600 mt-1">选择要压缩的图片，支持多选</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 cursor-pointer">
+                            <input type="checkbox" id="selectAllCheckbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                            <span>全选</span>
+                        </label>
+                        <button id="removeSelectedBtn" class="px-4 py-2 text-sm text-red-600 hover:text-red-800 transition-colors">
+                            <i class="fa fa-trash mr-1" aria-hidden="true"></i>
+                            删除选中
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 图片网格 -->
+                <div id="imagesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-96 overflow-y-auto p-2 custom-scrollbar">
+                    <!-- 图片卡片将动态添加 -->
+                </div>
+
+                <!-- 选中图片信息 -->
+                <div id="selectedImagesInfo" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 hidden">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa fa-check-circle text-blue-600" aria-hidden="true"></i>
+                            <span class="text-blue-800 font-medium">已选择 <span id="selectedCount">0</span> 张图片</span>
+                        </div>
+                        <button id="compressSelectedBtn" class="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                            <i class="fa fa-play mr-2" aria-hidden="true"></i>
+                            压缩选中图片
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 压缩设置 -->
+        <section id="compressionSettings" class="mb-10 hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fa fa-sliders text-primary mr-3" aria-hidden="true"></i>
+                    压缩设置
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- 质量设置 -->
+                    <div class="space-y-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fa fa-bullseye text-secondary mr-2" aria-hidden="true"></i>
+                            压缩质量
+                        </label>
+                        <div class="space-y-2">
+                            <input type="range" id="qualitySlider" min="0.1" max="1" step="0.1" value="0.8" 
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+                            <div class="flex justify-between items-center text-sm text-gray-500">
+                                <span>低质量</span>
+                                <span id="qualityValue" class="font-semibold text-primary">80%</span>
+                                <span>高质量</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 预设按钮 -->
+                        <div class="grid grid-cols-3 gap-2">
+                            <button data-quality="0.9" class="preset-btn px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors">
+                                高质量
+                            </button>
+                            <button data-quality="0.8" class="preset-btn px-3 py-2 text-sm font-medium rounded-lg bg-primary text-white">
+                                标准
+                            </button>
+                            <button data-quality="0.6" class="preset-btn px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 hover:border-primary hover:text-primary transition-colors">
+                                高压缩
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 格式和尺寸设置 -->
+                    <div class="space-y-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fa fa-file-image-o text-secondary mr-2" aria-hidden="true"></i>
+                            输出格式
+                        </label>
+                        <select id="formatSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                            <option value="image/jpeg">JPEG (推荐照片)</option>
+                            <option value="image/png">PNG (支持透明)</option>
+                            <option value="image/webp">WebP (最佳压缩)</option>
+                        </select>
+                        
+                        <!-- 尺寸限制 -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fa fa-expand text-secondary mr-2" aria-hidden="true"></i>
+                                最大宽度
+                            </label>
+                            <select id="maxWidthSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                                <option value="0">原始尺寸</option>
+                                <option value="1920">1920px (Full HD)</option>
+                                <option value="1280">1280px (HD)</option>
+                                <option value="1024">1024px (标准)</option>
+                                <option value="800">800px (网页)</option>
+                                <option value="600">600px (移动)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="mt-8 flex justify-center">
+                    <button id="compressBtn" class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:ring-4 focus:ring-primary/20">
+                        <i class="fa fa-play mr-2" aria-hidden="true"></i>
+                        开始压缩所有图片
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 进度区域 -->
+        <section id="progressSection" class="mb-10 hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fa fa-spinner fa-spin text-primary mr-3" aria-hidden="true"></i>
+                    正在压缩图片...
+                </h2>
+                <div class="space-y-4">
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div id="progressBar" class="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-gray-600">
+                        <span id="currentImageInfo">准备开始压缩...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结果区域 -->
+        <section id="resultsSection" class="mb-10 hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fa fa-check-circle text-secondary mr-3" aria-hidden="true"></i>
+                        压缩完成
+                        <span id="completedCountBadge" class="ml-3 bg-secondary text-white text-sm px-2 py-1 rounded-full">0张</span>
+                    </h2>
+                    
+                    <!-- 下载选项 -->
+                    <div id="downloadOptionsContainer" class="w-full sm:w-auto">
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h3 class="text-sm font-medium text-gray-700 mb-3">选择下载方式</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="download-option selected border-2 border-primary bg-blue-50 rounded-lg p-4 text-center" data-option="zip">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <i class="fa fa-compress text-blue-600 text-xl" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="font-medium text-gray-900">压缩包下载</div>
+                                    <div class="text-xs text-gray-600 mt-1">打包所有图片为ZIP文件</div>
+                                </div>
+                                <div class="download-option border-2 border-gray-200 rounded-lg p-4 text-center hover:border-primary transition-colors" data-option="individual">
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <i class="fa fa-download text-green-600 text-xl" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="font-medium text-gray-900">单张下载</div>
+                                    <div class="text-xs text-gray-600 mt-1">分别下载每张图片</div>
+                                </div>
+                            </div>
+                            
+                            <button id="confirmDownloadBtn" class="w-full mt-4 px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <span id="downloadBtnText">下载压缩包</span>
+                                <i id="downloadBtnIcon" class="fa fa-compress ml-2" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 统计摘要 -->
+                <div class="grid md:grid-cols-4 gap-4 mb-8">
+                    <div class="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div class="text-2xl font-bold text-green-600" id="avgCompressionRate">75%</div>
+                        <div class="text-sm text-green-700">平均压缩率</div>
+                    </div>
+                    <div class="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="text-2xl font-bold text-blue-600" id="totalOriginalSize">2.5 MB</div>
+                        <div class="text-sm text-blue-700">原始总大小</div>
+                    </div>
+                    <div class="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="text-2xl font-bold text-purple-600" id="totalCompressedSize">625 KB</div>
+                        <div class="text-sm text-purple-700">压缩后总大小</div>
+                    </div>
+                    <div class="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                        <div class="text-2xl font-bold text-orange-600" id="totalSavedSize">1.875 MB</div>
+                        <div class="text-sm text-orange-700">总共节省空间</div>
+                    </div>
+                </div>
+
+                <!-- 压缩图片网格 -->
+                <div id="compressedImagesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8">
+                    <!-- 压缩图片卡片将动态添加 -->
+                </div>
+                
+                <!-- 再次压缩按钮 -->
+                <div class="text-center">
+                    <button id="compressAnotherBtn" class="px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-white transition-all duration-300">
+                        <i class="fa fa-plus mr-2" aria-hidden="true"></i>
+                        压缩另一批
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 功能特点 -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">图片压缩工具特点</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-balance-scale text-blue-600" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">平衡质量与大小</h3>
+                    <p class="text-gray-600 text-sm">智能压缩算法在减小文件大小的同时，最大限度保留图片细节和质量</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-files-o text-green-600" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">批量处理</h3>
+                    <p class="text-gray-600 text-sm">一次上传多张图片，批量压缩，节省时间和操作步骤</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-lock text-purple-600" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">隐私保护</h3>
+                    <p class="text-gray-600 text-sm">所有图片在本地浏览器中处理，不会上传到服务器，保护您的隐私</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                            <i class="fa fa-cogs text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">智能图片工具箱</h3>
+                    </div>
+                    <p class="text-gray-400">免费在线图片处理解决方案，保护您的隐私，提升工作效率。</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">工具导航</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="image-compressor.html" class="hover:text-white transition-colors">图片压缩</a></li>
+                        <li><a href="batch-renamer.html" class="hover:text-white transition-colors">批量改名</a></li>
+                        <li><a href="format-converter.html" class="hover:text-white transition-colors">格式转换</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">支持格式</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>• JPG/JPEG</li>
+                        <li>• PNG</li>
+                        <li>• WebP</li>
+                        <li>• 静态GIF</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">关于我们</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">使用帮助</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                <p>&copy; 2025 智能图片工具箱 版权所有 | 所有图片均在本地处理，保护您的隐私</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        class ImageCompressor {
+            constructor() {
+                this.initializeElements();
+                this.initializeEventListeners();
+                this.uploadedImages = [];
+                this.selectedImages = new Set();
+                this.compressedImages = [];
+                this.currentlyProcessing = false;
+                this.selectedDownloadOption = 'zip';
+            }
+
+            initializeElements() {
+                // 上传元素
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                
+                // 上传图片区域
+                this.uploadedImagesSection = document.getElementById('uploadedImagesSection');
+                this.imagesGrid = document.getElementById('imagesGrid');
+                this.imageCountBadge = document.getElementById('imageCountBadge');
+                this.selectAllCheckbox = document.getElementById('selectAllCheckbox');
+                this.removeSelectedBtn = document.getElementById('removeSelectedBtn');
+                this.selectedImagesInfo = document.getElementById('selectedImagesInfo');
+                this.selectedCount = document.getElementById('selectedCount');
+                this.compressSelectedBtn = document.getElementById('compressSelectedBtn');
+                
+                // 设置元素
+                this.compressionSettings = document.getElementById('compressionSettings');
+                this.qualitySlider = document.getElementById('qualitySlider');
+                this.qualityValue = document.getElementById('qualityValue');
+                this.formatSelect = document.getElementById('formatSelect');
+                this.maxWidthSelect = document.getElementById('maxWidthSelect');
+                this.presetBtns = document.querySelectorAll('.preset-btn');
+                
+                // 操作按钮
+                this.compressBtn = document.getElementById('compressBtn');
+                this.compressAnotherBtn = document.getElementById('compressAnotherBtn');
+                
+                // 进度元素
+                this.progressSection = document.getElementById('progressSection');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressPercent = document.getElementById('progressPercent');
+                this.currentImageInfo = document.getElementById('currentImageInfo');
+                
+                // 结果元素
+                this.resultsSection = document.getElementById('resultsSection');
+                this.completedCountBadge = document.getElementById('completedCountBadge');
+                this.avgCompressionRate = document.getElementById('avgCompressionRate');
+                this.totalOriginalSize = document.getElementById('totalOriginalSize');
+                this.totalCompressedSize = document.getElementById('totalCompressedSize');
+                this.totalSavedSize = document.getElementById('totalSavedSize');
+                this.compressedImagesGrid = document.getElementById('compressedImagesGrid');
+                
+                // 下载选项
+                this.downloadOptionsContainer = document.getElementById('downloadOptionsContainer');
+                this.downloadOptions = document.querySelectorAll('.download-option');
+                this.confirmDownloadBtn = document.getElementById('confirmDownloadBtn');
+                this.downloadBtnText = document.getElementById('downloadBtnText');
+                this.downloadBtnIcon = document.getElementById('downloadBtnIcon');
+            }
+
+            initializeEventListeners() {
+                // 上传事件
+                this.uploadArea.addEventListener('click', () => this.fileInput.click());
+                this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                
+                // 拖放事件
+                this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+                this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
+                this.uploadArea.addEventListener('dragleave', () => this.handleDragLeave());
+                
+                // 上传图片事件
+                this.selectAllCheckbox.addEventListener('change', (e) => this.toggleSelectAll(e));
+                this.removeSelectedBtn.addEventListener('click', () => this.removeSelectedImages());
+                this.compressSelectedBtn.addEventListener('click', () => this.compressSelectedImages());
+                
+                // 设置事件
+                this.qualitySlider.addEventListener('input', (e) => this.updateQualityValue(e));
+                this.presetBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.selectPreset(e));
+                });
+                
+                // 操作事件
+                this.compressBtn.addEventListener('click', () => this.compressAllImages());
+                this.compressAnotherBtn.addEventListener('click', () => this.resetForm());
+                
+                // 下载选项事件
+                this.downloadOptions.forEach(option => {
+                    option.addEventListener('click', (e) => this.selectDownloadOption(e));
+                });
+                this.confirmDownloadBtn.addEventListener('click', () => this.startDownload());
+            }
+
+            handleFileSelect(event) {
+                const files = event.target.files;
+                if (files.length > 0) {
+                    this.processFiles(files);
+                }
+            }
+
+            handleDragOver(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.uploadArea.classList.add('border-primary', 'bg-blue-50');
+            }
+
+            handleDragLeave() {
+                this.uploadArea.classList.remove('border-primary', 'bg-blue-50');
+            }
+
+            handleDrop(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.uploadArea.classList.remove('border-primary', 'bg-blue-50');
+                
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    this.processFiles(files);
+                }
+            }
+
+            processFiles(files) {
+                const validFiles = Array.from(files).filter(file => {
+                    const isValidType = file.type.startsWith('image/');
+                    const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+                    
+                    if (!isValidType) {
+                        this.showNotification('请选择图片文件 (JPG、PNG、WebP)', 'error');
+                    }
+                    if (!isValidSize) {
+                        this.showNotification('图片大小不能超过10MB', 'error');
+                    }
+                    
+                    return isValidType && isValidSize;
+                });
+
+                if (validFiles.length > 0) {
+                    this.addImagesToPreview(validFiles);
+                    this.showUploadedImagesSection();
+                }
+            }
+
+            addImagesToPreview(files) {
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const imageId = Date.now() + Math.random().toString(36).substr(2, 9);
+                        const imageInfo = {
+                            id: imageId,
+                            file: file,
+                            url: e.target.result,
+                            size: file.size,
+                            name: file.name,
+                            type: file.type
+                        };
+                        
+                        this.uploadedImages.push(imageInfo);
+                        this.renderImageCard(imageInfo);
+                        this.updateImageCount();
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            renderImageCard(imageInfo) {
+                const card = document.createElement('div');
+                card.className = 'image-card border border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-primary transition-all duration-300';
+                card.dataset.imageId = imageInfo.id;
+                
+                card.innerHTML = `
+                    <div class="relative">
+                        <img src="${imageInfo.url}" alt="${imageInfo.name}" 
+                             class="w-full h-32 object-cover" loading="lazy">
+                        <div class="absolute top-2 right-2">
+                            <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary image-select-checkbox" 
+                                   data-image-id="${imageInfo.id}">
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 text-xs">
+                            <div class="truncate">${imageInfo.name}</div>
+                            <div class="text-gray-300">${this.formatFileSize(imageInfo.size)}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // 选择事件
+                card.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('image-select-checkbox')) return;
+                    const checkbox = card.querySelector('.image-select-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    this.toggleImageSelection(imageInfo.id, checkbox.checked);
+                });
+                
+                // 复选框事件
+                const checkbox = card.querySelector('.image-select-checkbox');
+                checkbox.addEventListener('change', (e) => {
+                    e.stopPropagation();
+                    this.toggleImageSelection(imageInfo.id, checkbox.checked);
+                });
+                
+                this.imagesGrid.appendChild(card);
+            }
+
+            toggleImageSelection(imageId, isSelected) {
+                const card = document.querySelector(`.image-card[data-image-id="${imageId}"]`);
+                
+                if (isSelected) {
+                    this.selectedImages.add(imageId);
+                    card.classList.add('border-primary', 'bg-blue-50');
+                } else {
+                    this.selectedImages.delete(imageId);
+                    card.classList.remove('border-primary', 'bg-blue-50');
+                    this.selectAllCheckbox.checked = false;
+                }
+                
+                this.updateSelectedCount();
+            }
+
+            toggleSelectAll(event) {
+                const isChecked = event.target.checked;
+                
+                this.uploadedImages.forEach(image => {
+                    const checkbox = document.querySelector(`.image-select-checkbox[data-image-id="${image.id}"]`);
+                    if (checkbox) {
+                        checkbox.checked = isChecked;
+                        this.toggleImageSelection(image.id, isChecked);
+                    }
+                });
+            }
+
+            updateImageCount() {
+                this.imageCountBadge.textContent = `${this.uploadedImages.length}张`;
+            }
+
+            updateSelectedCount() {
+                const count = this.selectedImages.size;
+                this.selectedCount.textContent = count;
+                
+                if (count > 0) {
+                    this.selectedImagesInfo.classList.remove('hidden');
+                } else {
+                    this.selectedImagesInfo.classList.add('hidden');
+                }
+            }
+
+            showUploadedImagesSection() {
+                this.uploadedImagesSection.classList.remove('hidden');
+                this.compressionSettings.classList.remove('hidden');
+                this.resultsSection.classList.add('hidden');
+            }
+
+            removeSelectedImages() {
+                if (this.selectedImages.size === 0) {
+                    this.showNotification('请先选择要删除的图片', 'warning');
+                    return;
+                }
+
+                this.selectedImages.forEach(imageId => {
+                    // 从数组中移除
+                    this.uploadedImages = this.uploadedImages.filter(img => img.id !== imageId);
+                    
+                    // 从DOM中移除
+                    const card = document.querySelector(`.image-card[data-image-id="${imageId}"]`);
+                    if (card) {
+                        card.remove();
+                    }
+                });
+                
+                // 清空选中
+                this.selectedImages.clear();
+                this.selectAllCheckbox.checked = false;
+                this.updateImageCount();
+                this.updateSelectedCount();
+                
+                // 如果没有图片了，隐藏区域
+                if (this.uploadedImages.length === 0) {
+                    this.uploadedImagesSection.classList.add('hidden');
+                    this.compressionSettings.classList.add('hidden');
+                }
+            }
+
+            async compressSelectedImages() {
+                if (this.selectedImages.size === 0) {
+                    this.showNotification('请先选择要压缩的图片', 'warning');
+                    return;
+                }
+
+                const selectedImageData = this.uploadedImages.filter(img => 
+                    this.selectedImages.has(img.id)
+                );
+
+                await this.startCompression(selectedImageData);
+            }
+
+            async compressAllImages() {
+                if (this.uploadedImages.length === 0) {
+                    this.showNotification('请先上传图片', 'warning');
+                    return;
+                }
+
+                await this.startCompression(this.uploadedImages);
+            }
+
+            async startCompression(imagesToCompress) {
+                if (this.currentlyProcessing) {
+                    this.showNotification('压缩正在进行中，请稍候...', 'info');
+                    return;
+                }
+
+                try {
+                    this.currentlyProcessing = true;
+                    this.showProgress();
+                    this.compressedImages = [];
+                    
+                    for (let i = 0; i < imagesToCompress.length; i++) {
+                        const image = imagesToCompress[i];
+                        const compressedImage = await this.compressSingleImage(image, i + 1, imagesToCompress.length);
+                        this.compressedImages.push(compressedImage);
+                    }
+                    
+                    this.showResults();
+                    this.showNotification(`压缩完成！共处理了 ${this.compressedImages.length} 张图片`, 'success');
+                } catch (error) {
+                    this.showNotification('压缩失败，请重试', 'error');
+                    console.error('Compression error:', error);
+                } finally {
+                    this.currentlyProcessing = false;
+                }
+            }
+
+            async compressSingleImage(imageInfo, current, total) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        // 计算新尺寸
+                        const { width, height } = this.calculateSize(img.width, img.height);
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        // 绘制图片
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // 转换为blob
+                        canvas.toBlob((blob) => {
+                            const compressedFile = new File([blob], this.getOutputFilename(imageInfo.file), {
+                                type: this.formatSelect.value
+                            });
+                            
+                            const compressionRate = Math.round((1 - blob.size / imageInfo.size) * 100);
+                            
+                            // 更新进度
+                            const progress = ((current / total) * 100);
+                            this.progressBar.style.width = progress + '%';
+                            this.progressPercent.textContent = Math.round(progress) + '%';
+                            this.currentImageInfo.textContent = `正在压缩: ${current}/${total} - ${imageInfo.name}`;
+                            
+                            resolve({
+                                original: imageInfo,
+                                compressed: compressedFile,
+                                compressedUrl: URL.createObjectURL(blob),
+                                originalSize: imageInfo.size,
+                                compressedSize: blob.size,
+                                compressionRate: compressionRate,
+                                width: width,
+                                height: height
+                            });
+                        }, this.formatSelect.value, parseFloat(this.qualitySlider.value));
+                    };
+                    
+                    img.src = imageInfo.url;
+                });
+            }
+
+            calculateSize(width, height) {
+                const maxWidth = parseInt(this.maxWidthSelect.value);
+                
+                if (maxWidth === 0 || width <= maxWidth) {
+                    return { width, height };
+                }
+                
+                const ratio = maxWidth / width;
+                return {
+                    width: maxWidth,
+                    height: Math.round(height * ratio)
+                };
+            }
+
+            getOutputFilename(file) {
+                const extension = this.formatSelect.value.split('/')[1];
+                const name = file.name.replace(/\.[^/.]+$/, "");
+                return `${name}.${extension}`;
+            }
+
+            showProgress() {
+                this.progressSection.classList.remove('hidden');
+                this.uploadedImagesSection.classList.add('hidden');
+                this.compressionSettings.classList.add('hidden');
+                this.resultsSection.classList.add('hidden');
+                
+                this.progressBar.style.width = '0%';
+                this.progressPercent.textContent = '0%';
+                this.currentImageInfo.textContent = '准备开始压缩...';
+            }
+
+            showResults() {
+                this.resultsSection.classList.remove('hidden');
+                this.progressSection.classList.add('hidden');
+                
+                // 更新统计信息
+                this.updateResultsSummary();
+                
+                // 渲染压缩图片网格
+                this.renderCompressedImagesGrid();
+                
+                // 更新完成计数
+                this.completedCountBadge.textContent = `${this.compressedImages.length}张`;
+                
+                // 单张图片自动下载
+                if (this.compressedImages.length === 1) {
+                    this.downloadOptionsContainer.classList.add('hidden');
+                    setTimeout(() => {
+                        this.downloadSingleImage(0);
+                    }, 1000);
+                } else {
+                    this.downloadOptionsContainer.classList.remove('hidden');
+                }
+            }
+
+            updateResultsSummary() {
+                if (this.compressedImages.length === 0) return;
+                
+                const totalOriginal = this.compressedImages.reduce((sum, item) => sum + item.originalSize, 0);
+                const totalCompressed = this.compressedImages.reduce((sum, item) => sum + item.compressedSize, 0);
+                const totalRate = Math.round((1 - totalCompressed / totalOriginal) * 100);
+                const avgRate = Math.round(this.compressedImages.reduce((sum, item) => sum + item.compressionRate, 0) / this.compressedImages.length);
+                
+                this.avgCompressionRate.textContent = avgRate + '%';
+                this.totalOriginalSize.textContent = this.formatFileSize(totalOriginal);
+                this.totalCompressedSize.textContent = this.formatFileSize(totalCompressed);
+                this.totalSavedSize.textContent = this.formatFileSize(totalOriginal - totalCompressed);
+            }
+
+            renderCompressedImagesGrid() {
+                this.compressedImagesGrid.innerHTML = '';
+                
+                this.compressedImages.forEach((result, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300';
+                    
+                    card.innerHTML = `
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="relative">
+                                <img src="${result.original.url}" alt="原始图片: ${result.original.name}" 
+                                     class="w-full h-32 object-cover" loading="lazy">
+                                <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-1 text-xs">
+                                    原图
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <img src="${result.compressedUrl}" alt="压缩后图片: ${result.compressed.name}" 
+                                     class="w-full h-32 object-cover" loading="lazy">
+                                <div class="absolute bottom-0 left-0 right-0 bg-green-600 text-white p-1 text-xs">
+                                    压缩后
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="font-medium text-gray-900 truncate">${result.compressed.name}</div>
+                            <div class="text-sm text-gray-600 mt-1">
+                                <span class="text-red-600">${this.formatFileSize(result.originalSize)}</span>
+                                <i class="fa fa-arrow-right text-gray-400 mx-1" aria-hidden="true"></i>
+                                <span class="text-green-600">${this.formatFileSize(result.compressedSize)}</span>
+                            </div>
+                            <div class="text-sm text-green-600 font-medium mt-1">
+                                <i class="fa fa-compress mr-1" aria-hidden="true"></i>
+                                压缩率: ${result.compressionRate}%
+                            </div>
+                            <button class="w-full mt-2 px-3 py-1 bg-primary text-white text-sm rounded-lg hover:bg-blue-600 transition-colors download-single-btn"
+                                    data-index="${index}">
+                                <i class="fa fa-download mr-1" aria-hidden="true"></i>
+                                下载
+                            </button>
+                        </div>
+                    `;
+                    
+                    this.compressedImagesGrid.appendChild(card);
+                    
+                    // 添加下载事件
+                    const downloadBtn = card.querySelector('.download-single-btn');
+                    downloadBtn.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        this.downloadSingleImage(index);
+                    });
+                });
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            selectDownloadOption(event) {
+                const option = event.currentTarget.dataset.option;
+                
+                // 更新选中状态
+                this.downloadOptions.forEach(opt => {
+                    opt.classList.remove('selected', 'border-primary', 'bg-blue-50');
+                    opt.classList.add('border-gray-200');
+                });
+                
+                event.currentTarget.classList.add('selected', 'border-primary', 'bg-blue-50');
+                event.currentTarget.classList.remove('border-gray-200');
+                
+                // 更新选中选项
+                this.selectedDownloadOption = option;
+                
+                // 更新按钮文本和图标
+                if (option === 'zip') {
+                    this.downloadBtnText.textContent = '下载压缩包';
+                    this.downloadBtnIcon.className = 'fa fa-compress ml-2';
+                } else {
+                    this.downloadBtnText.textContent = '下载所有图片';
+                    this.downloadBtnIcon.className = 'fa fa-download ml-2';
+                }
+            }
+
+            async startDownload() {
+                if (this.compressedImages.length === 0) return;
+                
+                this.confirmDownloadBtn.disabled = true;
+                this.confirmDownloadBtn.innerHTML = '<div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>';
+                
+                try {
+                    if (this.selectedDownloadOption === 'zip') {
+                        await this.downloadAsZip();
+                    } else {
+                        this.downloadAllIndividual();
+                    }
+                } catch (error) {
+                    this.showNotification('下载失败，请重试', 'error');
+                    console.error('Download error:', error);
+                } finally {
+                    this.confirmDownloadBtn.disabled = false;
+                    this.confirmDownloadBtn.innerHTML = `
+                        <span id="downloadBtnText">${this.selectedDownloadOption === 'zip' ? '下载压缩包' : '下载所有图片'}</span>
+                        <i id="downloadBtnIcon" class="fa fa-${this.selectedDownloadOption === 'zip' ? 'compress' : 'download'} ml-2"></i>
+                    `;
+                }
+            }
+
+            async downloadAsZip() {
+                try {
+                    this.showNotification('正在创建压缩包...', 'info');
+                    
+                    // 创建zip文件
+                    const zip = new JSZip();
+                    
+                    // 添加所有压缩图片到zip
+                    for (let i = 0; i < this.compressedImages.length; i++) {
+                        const result = this.compressedImages[i];
+                        const response = await fetch(result.compressedUrl);
+                        const blob = await response.blob();
+                        
+                        // 添加到zip
+                        zip.file(result.compressed.name, blob);
+                        
+                        // 更新进度
+                        this.showNotification(`正在添加图片 ${i + 1}/${this.compressedImages.length}`, 'info');
+                    }
+                    
+                    // 生成zip文件
+                    const zipContent = await zip.generateAsync({ 
+                        type: 'blob',
+                        compression: 'DEFLATE',
+                        compressionOptions: { level: 6 }
+                    });
+                    
+                    // 下载zip文件
+                    const timestamp = new Date().toISOString().replace(/[-:\.T]/g, '').substring(0, 14);
+                    const zipFilename = `compressed_images_${timestamp}.zip`;
+                    
+                    saveAs(zipContent, zipFilename);
+                    
+                    this.showNotification(`压缩包已下载：${zipFilename}`, 'success');
+                } catch (error) {
+                    console.error('Zip download error:', error);
+                    throw error;
+                }
+            }
+
+            downloadAllIndividual() {
+                this.showNotification('开始下载所有图片...', 'info');
+                
+                // 延迟下载避免浏览器问题
+                this.compressedImages.forEach((result, index) => {
+                    setTimeout(() => {
+                        this.downloadFile(result.compressedUrl, result.compressed.name);
+                        
+                        // 最后一个下载完成后显示通知
+                        if (index === this.compressedImages.length - 1) {
+                            setTimeout(() => {
+                                this.showNotification(`所有 ${this.compressedImages.length} 张图片已开始下载`, 'success');
+                            }, 1000);
+                        }
+                    }, index * 300);
+                });
+            }
+
+            downloadSingleImage(index) {
+                if (index >= 0 && index < this.compressedImages.length) {
+                    const result = this.compressedImages[index];
+                    this.downloadFile(result.compressedUrl, result.compressed.name);
+                    this.showNotification(`已下载: ${result.compressed.name}`, 'success');
+                }
+            }
+
+            downloadFile(url, filename) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            resetForm() {
+                this.uploadedImages = [];
+                this.selectedImages.clear();
+                this.compressedImages = [];
+                this.currentlyProcessing = false;
+                this.selectedDownloadOption = 'zip';
+                
+                // 重置UI
+                this.fileInput.value = '';
+                this.imagesGrid.innerHTML = '';
+                this.compressedImagesGrid.innerHTML = '';
+                this.uploadedImagesSection.classList.add('hidden');
+                this.compressionSettings.classList.add('hidden');
+                this.resultsSection.classList.add('hidden');
+                this.progressSection.classList.add('hidden');
+                
+                // 重置设置
+                this.qualitySlider.value = 0.8;
+                this.qualityValue.textContent = '80%';
+                this.formatSelect.value = 'image/jpeg';
+                this.maxWidthSelect.value = '0';
+                this.selectAllCheckbox.checked = false;
+                
+                // 重置预设按钮
+                this.presetBtns.forEach(btn => {
+                    btn.classList.remove('bg-primary', 'text-white');
+                    btn.classList.add('border-gray-200');
+                });
+                this.presetBtns[1].classList.remove('border-gray-200');
+                this.presetBtns[1].classList.add('bg-primary', 'text-white');
+                
+                // 重置下载选项
+                this.downloadOptions.forEach((opt, index) => {
+                    if (index === 0) {
+                        opt.classList.add('selected', 'border-primary', 'bg-blue-50');
+                        opt.classList.remove('border-gray-200');
+                    } else {
+                        opt.classList.remove('selected', 'border-primary', 'bg-blue-50');
+                        opt.classList.add('border-gray-200');
+                    }
+                });
+                
+                // 重置计数
+                this.updateImageCount();
+                this.updateSelectedCount();
+            }
+
+            updateQualityValue(event) {
+                const quality = parseFloat(event.target.value);
+                this.qualityValue.textContent = Math.round(quality * 100) + '%';
+            }
+
+            selectPreset(event) {
+                const quality = parseFloat(event.target.dataset.quality);
+                this.qualitySlider.value = quality;
+                this.qualityValue.textContent = Math.round(quality * 100) + '%';
+                
+                // 更新预设按钮样式
+                this.presetBtns.forEach(btn => {
+                    btn.classList.remove('bg-primary', 'text-white');
+                    btn.classList.add('border-gray-200');
+                });
+                
+                event.target.classList.remove('border-gray-200');
+                event.target.classList.add('bg-primary', 'text-white');
+            }
+
+            showNotification(message, type = 'info') {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full`;
+                
+                // 根据类型设置样式
+                switch (type) {
+                    case 'success':
+                        notification.classList.add('bg-green-500', 'text-white');
+                        break;
+                    case 'error':
+                        notification.classList.add('bg-red-500', 'text-white');
+                        break;
+                    case 'warning':
+                        notification.classList.add('bg-yellow-500', 'text-white');
+                        break;
+                    default:
+                        notification.classList.add('bg-blue-500', 'text-white');
+                }
+                
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fa fa-check-circle" aria-hidden="true"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // 显示通知
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+                
+                // 隐藏通知
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new ImageCompressor();
+        });
+    </script>
+</body>
+</html>
