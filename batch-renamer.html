@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片批量改名工具 - 免费在线批量重命名图片文件，支持序号和日期</title>
+    <meta name="description" content="图片批量改名工具支持批量重命名图片文件，自定义前缀、后缀、序号格式和日期，实时预览效果，批量处理并打包下载，完全免费。">
+    <meta name="keywords" content="批量改名, 图片批量重命名, 批量改名工具, 图片改名, 批量文件改名">
+    <link rel="canonical" href="batch-renamer.html">
+    <meta name="robots" content="index, follow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <!-- 结构化数据 -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ItemPage",
+        "name": "图片批量改名工具",
+        "description": "批量重命名图片文件，支持序号、日期和自定义规则",
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "首页",
+                    "item": "index.html"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "批量改名工具",
+                    "item": "batch-renamer.html"
+                }
+            ]
+        }
+    }
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#6366F1'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .upload-area {
+                transition: all 0.3s ease;
+            }
+            .upload-area:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+            .image-card {
+                transition: all 0.3s ease;
+            }
+            .image-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+            .setting-card {
+                transition: all 0.2s ease;
+            }
+            .setting-card:hover {
+                background-color: #f8fafc;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <!-- 页头导航 -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                        <i class="fa fa-cogs text-white text-lg"></i>
+                    </div>
+                    <a href="index.html" class="text-xl font-bold text-gray-900 hover:text-primary transition-colors">智能图片工具箱</a>
+                </div>
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="index.html" class="text-gray-600 hover:text-primary transition-colors">首页</a>
+                    <a href="image-compressor.html" class="text-gray-600 hover:text-primary transition-colors">图片压缩</a>
+                    <a href="batch-renamer.html" class="text-primary font-medium">批量改名</a>
+                    <a href="format-converter.html" class="text-gray-600 hover:text-primary transition-colors">格式转换</a>
+                </nav>
+                <button class="md:hidden text-gray-600" aria-label="菜单">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 页面标题 -->
+        <section class="mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">图片批量改名工具</h1>
+            <p class="text-gray-600 max-w-3xl">轻松批量重命名图片文件，支持自定义前缀、后缀、序号格式和日期，实时预览改名效果，批量处理后打包下载，让您的图片文件管理更高效。</p>
+        </section>
+
+        <div class="space-y-10">
+            <!-- 上传区域 -->
+            <section>
+                <div id="renameUploadArea" class="upload-area border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer bg-white/70 hover:border-primary transition-all duration-300">
+                    <div class="space-y-4">
+                        <div class="w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full flex items-center justify-center mx-auto">
+                            <i class="fa fa-cloud-upload text-3xl text-primary" aria-label="上传图标"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <h2 class="text-xl font-semibold text-gray-900">点击或拖拽上传图片</h2>
+                            <p class="text-gray-600">支持JPG、PNG、WebP等格式</p>
+                        </div>
+                        <input type="file" id="renameFileInput" accept="image/*" multiple class="hidden" aria-label="选择图片文件">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 已上传文件列表 -->
+            <section id="renameFilesList" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fa fa-files-o text-primary mr-3" aria-hidden="true"></i>
+                        已上传文件 (<span id="renameFileCount">0</span>个)
+                    </h2>
+                    <div id="renameFilesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-64 overflow-y-auto custom-scrollbar">
+                        <!-- 文件卡片将动态添加 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 命名规则设置 -->
+            <section id="renameSettings" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i class="fa fa-cogs text-primary mr-3" aria-hidden="true"></i>
+                        命名规则设置
+                    </h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- 基本设置 -->
+                        <div class="space-y-6">
+                            <div class="setting-card p-4 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fa fa-font text-secondary mr-2" aria-hidden="true"></i>
+                                    文件前缀
+                                </label>
+                                <input type="text" id="filePrefix" placeholder="例如：photo_" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                                <p class="text-xs text-gray-500 mt-1">添加在文件名前面的文字</p>
+                            </div>
+                            
+                            <div class="setting-card p-4 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fa fa-font text-secondary mr-2" aria-hidden="true"></i>
+                                    文件后缀
+                                </label>
+                                <input type="text" id="fileSuffix" placeholder="例如：_edited" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                                <p class="text-xs text-gray-500 mt-1">添加在文件名后面的文字</p>
+                            </div>
+                            
+                            <div class="setting-card p-4 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fa fa-sort-numeric-asc text-secondary mr-2" aria-hidden="true"></i>
+                                    起始序号
+                                </label>
+                                <input type="number" id="startNumber" value="1" min="1" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                                <p class="text-xs text-gray-500 mt-1">序号从哪个数字开始</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 高级设置 -->
+                        <div class="space-y-6">
+                            <div class="setting-card p-4 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fa fa-list-ol text-secondary mr-2" aria-hidden="true"></i>
+                                    序号格式
+                                </label>
+                                <select id="numberFormat" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                                    <option value="0">1, 2, 3... (普通格式)</option>
+                                    <option value="00">01, 02, 03... (两位数)</option>
+                                    <option value="000">001, 002, 003... (三位数)</option>
+                                    <option value="0000">0001, 0002, 0003... (四位数)</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">选择序号的显示格式</p>
+                            </div>
+                            
+                            <div class="setting-card p-4 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fa fa-calendar text-secondary mr-2" aria-hidden="true"></i>
+                                    日期格式
+                                </label>
+                                <select id="dateFormat" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                                    <option value="">不添加日期</option>
+                                    <option value="YYYYMMDD">20241225 (年月日)</option>
+                                    <option value="YYYY-MM-DD">2024-12-25 (年-月-日)</option>
+                                    <option value="MMDDYYYY">12252024 (月日年)</option>
+                                    <option value="DDMMYYYY">25122024 (日月年)</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">选择是否添加日期及日期格式</p>
+                            </div>
+                            
+                            <div class="setting-card p-4 rounded-lg">
+                                <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 cursor-pointer">
+                                    <input type="checkbox" id="preserveOriginalName" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    <span>保留原始文件名（在序号后）</span>
+                                </label>
+                                <p class="text-xs text-gray-500 mt-1">勾选后将在序号后面保留原始文件名</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 预览区域 -->
+            <section id="renamePreview" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fa fa-eye text-primary mr-3" aria-hidden="true"></i>
+                        改名预览
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-900">序号</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-900">原始文件名</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-900">新文件名</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody">
+                                <!-- 预览行将动态添加 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 操作按钮 -->
+            <section id="renameActions" class="hidden text-center">
+                <button id="startRenameBtn" class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:ring-4 focus:ring-primary/20">
+                    <i class="fa fa-play mr-2" aria-hidden="true"></i>
+                    开始批量改名
+                </button>
+            </section>
+
+            <!-- 进度区域 -->
+            <section id="renameProgress" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fa fa-spinner fa-spin text-primary mr-3" aria-hidden="true"></i>
+                        正在处理...
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div id="renameProgressBar" class="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between items-center text-sm text-gray-600">
+                            <span id="renameCurrentFile">准备开始处理...</span>
+                            <span id="renameProgressPercent">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 结果区域 -->
+            <section id="renameResults" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i class="fa fa-check-circle text-secondary mr-3" aria-hidden="true"></i>
+                        批量改名完成
+                    </h2>
+                    
+                    <div class="grid md:grid-cols-3 gap-4 mb-6">
+                        <div class="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div class="text-2xl font-bold text-green-600" id="totalFilesRenamed">0</div>
+                            <div class="text-sm text-green-700">总文件数</div>
+                        </div>
+                        <div class="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="text-2xl font-bold text-blue-600" id="renameSuccessCount">0</div>
+                            <div class="text-sm text-blue-700">成功改名</div>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                            <div class="text-2xl font-bold text-purple-600">ZIP</div>
+                            <div class="text-sm text-purple-700">打包下载</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button id="downloadRenamedBtn" class="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:ring-4 focus:ring-purple-200 mr-4">
+                            <i class="fa fa-download mr-2" aria-hidden="true"></i>
+                            下载所有文件
+                        </button>
+                        <button id="renameAnotherBtn" class="px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary hover:text-white transition-all duration-300">
+                            <i class="fa fa-plus mr-2" aria-hidden="true"></i>
+                            处理另一批
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 功能特点 -->
+        <section class="mt-16 mb-10">
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">批量改名工具特点</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-sliders text-blue-600" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">灵活的命名规则</h3>
+                    <p class="text-gray-600 text-sm">支持自定义前缀、后缀、序号格式和日期，满足各种命名需求</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-eye text-green-600" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">实时预览效果</h3>
+                    <p class="text-gray-600 text-sm">修改命名规则时即时显示改名效果，避免错误操作</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-bolt text-purple-600" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">高效批量处理</h3>
+                    <p class="text-gray-600 text-sm">一次处理多张图片，自动打包为ZIP文件，方便下载使用</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                            <i class="fa fa-cogs text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">智能图片工具箱</h3>
+                    </div>
+                    <p class="text-gray-400">免费在线图片处理解决方案，保护您的隐私，提升工作效率。</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">工具导航</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="image-compressor.html" class="hover:text-white transition-colors">图片压缩</a></li>
+                        <li><a href="batch-renamer.html" class="hover:text-white transition-colors">批量改名</a></li>
+                        <li><a href="format-converter.html" class="hover:text-white transition-colors">格式转换</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">支持格式</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>• JPG/JPEG</li>
+                        <li>• PNG</li>
+                        <li>• WebP</li>
+                        <li>• 静态GIF</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">关于我们</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">使用帮助</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                <p>&copy; 2025 智能图片工具箱 版权所有 | 所有图片均在本地处理，保护您的隐私</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        class BatchRenamer {
+            constructor() {
+                this.initializeElements();
+                this.initializeEventListeners();
+                this.renameFiles = [];
+                this.renamedFiles = [];
+                this.currentlyRenaming = false;
+            }
+
+            initializeElements() {
+                // 批量改名元素
+                this.renameUploadArea = document.getElementById('renameUploadArea');
+                this.renameFileInput = document.getElementById('renameFileInput');
+                this.renameFilesList = document.getElementById('renameFilesList');
+                this.renameFileCount = document.getElementById('renameFileCount');
+                this.renameFilesGrid = document.getElementById('renameFilesGrid');
+                this.renameSettings = document.getElementById('renameSettings');
+                this.renamePreview = document.getElementById('renamePreview');
+                this.previewTableBody = document.getElementById('previewTableBody');
+                this.renameActions = document.getElementById('renameActions');
+                this.startRenameBtn = document.getElementById('startRenameBtn');
+                this.renameProgress = document.getElementById('renameProgress');
+                this.renameProgressBar = document.getElementById('renameProgressBar');
+                this.renameCurrentFile = document.getElementById('renameCurrentFile');
+                this.renameProgressPercent = document.getElementById('renameProgressPercent');
+                this.renameResults = document.getElementById('renameResults');
+                this.totalFilesRenamed = document.getElementById('totalFilesRenamed');
+                this.renameSuccessCount = document.getElementById('renameSuccessCount');
+                this.downloadRenamedBtn = document.getElementById('downloadRenamedBtn');
+                this.renameAnotherBtn = document.getElementById('renameAnotherBtn');
+                
+                // 命名设置
+                this.filePrefix = document.getElementById('filePrefix');
+                this.fileSuffix = document.getElementById('fileSuffix');
+                this.startNumber = document.getElementById('startNumber');
+                this.numberFormat = document.getElementById('numberFormat');
+                this.dateFormat = document.getElementById('dateFormat');
+                this.preserveOriginalName = document.getElementById('preserveOriginalName');
+            }
+
+            initializeEventListeners() {
+                // 上传事件
+                this.renameUploadArea.addEventListener('click', () => this.renameFileInput.click());
+                this.renameFileInput.addEventListener('change', (e) => this.handleRenameFileSelect(e));
+                
+                // 拖放事件
+                this.renameUploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+                this.renameUploadArea.addEventListener('drop', (e) => this.handleRenameDrop(e));
+                this.renameUploadArea.addEventListener('dragleave', () => this.handleDragLeave());
+                
+                // 命名设置变化
+                this.filePrefix.addEventListener('input', () => this.updatePreview());
+                this.fileSuffix.addEventListener('input', () => this.updatePreview());
+                this.startNumber.addEventListener('input', () => this.updatePreview());
+                this.numberFormat.addEventListener('change', () => this.updatePreview());
+                this.dateFormat.addEventListener('change', () => this.updatePreview());
+                this.preserveOriginalName.addEventListener('change', () => this.updatePreview());
+                
+                // 操作按钮
+                this.startRenameBtn.addEventListener('click', () => this.startBatchRename());
+                this.downloadRenamedBtn.addEventListener('click', () => this.downloadRenamedFiles());
+                this.renameAnotherBtn.addEventListener('click', () => this.resetRenamer());
+            }
+
+            handleDragOver(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.renameUploadArea.classList.add('border-primary', 'bg-blue-50');
+            }
+
+            handleDragLeave() {
+                this.renameUploadArea.classList.remove('border-primary', 'bg-blue-50');
+            }
+
+            handleRenameDrop(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.renameUploadArea.classList.remove('border-primary', 'bg-blue-50');
+                
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    this.processRenameFiles(files);
+                }
+            }
+
+            handleRenameFileSelect(event) {
+                const files = event.target.files;
+                if (files.length > 0) {
+                    this.processRenameFiles(files);
+                }
+            }
+
+            processRenameFiles(files) {
+                const validFiles = Array.from(files).filter(file => {
+                    const isValidType = file.type.startsWith('image/');
+                    
+                    if (!isValidType) {
+                        this.showNotification('请选择图片文件', 'error');
+                    }
+                    
+                    return isValidType;
+                });
+
+                if (validFiles.length > 0) {
+                    this.renameFiles = [...this.renameFiles, ...validFiles.map(file => ({
+                        file: file,
+                        name: file.name,
+                        type: file.type,
+                        url: URL.createObjectURL(file)
+                    }))];
+                    
+                    this.renderRenameFileCards();
+                    this.updateRenameFileCount();
+                    this.showRenameSections();
+                    this.updatePreview();
+                }
+            }
+
+            renderRenameFileCards() {
+                this.renameFilesGrid.innerHTML = '';
+                
+                this.renameFiles.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card border border-gray-200 rounded-xl overflow-hidden';
+                    
+                    card.innerHTML = `
+                        <div class="relative">
+                            <img src="${item.url}" alt="${item.name}" 
+                                 class="w-full h-32 object-cover" loading="lazy">
+                            <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 text-xs truncate">
+                                ${item.name}
+                            </div>
+                        </div>
+                    `;
+                    
+                    this.renameFilesGrid.appendChild(card);
+                });
+            }
+
+            updateRenameFileCount() {
+                this.renameFileCount.textContent = this.renameFiles.length;
+            }
+
+            showRenameSections() {
+                this.renameFilesList.classList.remove('hidden');
+                this.renameSettings.classList.remove('hidden');
+                this.renamePreview.classList.remove('hidden');
+                this.renameActions.classList.remove('hidden');
+            }
+
+            updatePreview() {
+                if (this.renameFiles.length === 0) return;
+                
+                this.previewTableBody.innerHTML = '';
+                
+                this.renameFiles.forEach((item, index) => {
+                    const newFileName = this.getNewFileName(item, index);
+                    const row = document.createElement('tr');
+                    row.className = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                    
+                    row.innerHTML = `
+                        <td class="py-3 px-4 border-b border-gray-200">${index + 1}</td>
+                        <td class="py-3 px-4 border-b border-gray-200 truncate max-w-xs">${item.name}</td>
+                        <td class="py-3 px-4 border-b border-gray-200 font-medium text-primary truncate max-w-xs">${newFileName}</td>
+                    `;
+                    
+                    this.previewTableBody.appendChild(row);
+                });
+            }
+
+            getNewFileName(fileItem, index) {
+                const prefix = this.filePrefix.value || '';
+                const suffix = this.fileSuffix.value || '';
+                const startNum = parseInt(this.startNumber.value) || 1;
+                const currentNum = startNum + index;
+                const numFormat = this.numberFormat.value;
+                const dateFormat = this.dateFormat.value;
+                const preserveOriginal = this.preserveOriginalName.checked;
+                
+                // 处理序号格式
+                let formattedNumber = '';
+                if (numFormat === '00') {
+                    formattedNumber = currentNum.toString().padStart(2, '0');
+                } else if (numFormat === '000') {
+                    formattedNumber = currentNum.toString().padStart(3, '0');
+                } else if (numFormat === '0000') {
+                    formattedNumber = currentNum.toString().padStart(4, '0');
+                } else {
+                    formattedNumber = currentNum.toString();
+                }
+                
+                // 处理日期
+                let formattedDate = '';
+                if (dateFormat) {
+                    const date = new Date();
+                    const year = date.getFullYear().toString();
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    
+                    formattedDate = dateFormat
+                        .replace('YYYY', year)
+                        .replace('MM', month)
+                        .replace('DD', day);
+                }
+                
+                // 获取文件扩展名
+                const ext = fileItem.name.split('.').pop();
+                const baseName = fileItem.name.substring(0, fileItem.name.lastIndexOf('.')) || fileItem.name;
+                
+                // 构建文件名部分
+                const nameParts = [];
+                if (prefix) nameParts.push(prefix);
+                if (formattedDate) nameParts.push(formattedDate);
+                nameParts.push(formattedNumber);
+                if (preserveOriginal) nameParts.push(baseName);
+                if (suffix) nameParts.push(suffix);
+                
+                // 组合并添加扩展名
+                return `${nameParts.join('_')}.${ext}`;
+            }
+
+            async startBatchRename() {
+                if (this.currentlyRenaming || this.renameFiles.length === 0) return;
+                
+                try {
+                    this.currentlyRenaming = true;
+                    this.renamedFiles = [];
+                    
+                    // 显示进度区域
+                    this.renameActions.classList.add('hidden');
+                    this.renameProgress.classList.remove('hidden');
+                    this.renameProgressBar.style.width = '0%';
+                    this.renameProgressPercent.textContent = '0%';
+                    
+                    // 逐个处理文件
+                    for (let i = 0; i < this.renameFiles.length; i++) {
+                        const fileItem = this.renameFiles[i];
+                        const newFileName = this.getNewFileName(fileItem, i);
+                        
+                        // 更新进度
+                        const progress = ((i + 1) / this.renameFiles.length) * 100;
+                        this.renameProgressBar.style.width = progress + '%';
+                        this.renameProgressPercent.textContent = Math.round(progress) + '%';
+                        this.renameCurrentFile.textContent = `正在处理: ${i + 1}/${this.renameFiles.length} - ${fileItem.name}`;
+                        
+                        // 读取文件并创建新文件
+                        const blob = await this.readFileAsBlob(fileItem.file);
+                        const newFile = new File([blob], newFileName, { type: fileItem.type });
+                        
+                        this.renamedFiles.push({
+                            originalName: fileItem.name,
+                            newName: newFileName,
+                            file: newFile,
+                            url: URL.createObjectURL(newFile)
+                        });
+                        
+                        // 模拟处理延迟
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                    
+                    // 显示结果
+                    this.totalFilesRenamed.textContent = this.renameFiles.length;
+                    this.renameSuccessCount.textContent = this.renamedFiles.length;
+                    
+                    this.renameProgress.classList.add('hidden');
+                    this.renameResults.classList.remove('hidden');
+                    
+                    this.showNotification(`批量改名完成，共处理 ${this.renamedFiles.length} 个文件`, 'success');
+                } catch (error) {
+                    this.showNotification('批量改名失败，请重试', 'error');
+                    console.error('Rename error:', error);
+                } finally {
+                    this.currentlyRenaming = false;
+                }
+            }
+
+            readFileAsBlob(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            async downloadRenamedFiles() {
+                if (this.renamedFiles.length === 0) return;
+                
+                this.downloadRenamedBtn.disabled = true;
+                this.downloadRenamedBtn.innerHTML = '<div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>';
+                
+                try {
+                    this.showNotification('正在创建压缩包...', 'info');
+                    
+                    // 创建zip文件
+                    const zip = new JSZip();
+                    
+                    // 添加所有文件到zip
+                    for (let i = 0; i < this.renamedFiles.length; i++) {
+                        const file = this.renamedFiles[i];
+                        const response = await fetch(file.url);
+                        const blob = await response.blob();
+                        
+                        // 添加到zip
+                        zip.file(file.newName, blob);
+                    }
+                    
+                    // 生成zip文件
+                    const zipContent = await zip.generateAsync({ 
+                        type: 'blob',
+                        compression: 'DEFLATE',
+                        compressionOptions: { level: 6 }
+                    });
+                    
+                    // 下载zip文件
+                    const timestamp = new Date().toISOString().replace(/[-:\.T]/g, '').substring(0, 14);
+                    const zipFilename = `renamed_images_${timestamp}.zip`;
+                    
+                    saveAs(zipContent, zipFilename);
+                    
+                    this.showNotification(`已下载: ${zipFilename}`, 'success');
+                } catch (error) {
+                    this.showNotification('下载失败，请重试', 'error');
+                    console.error('Download error:', error);
+                } finally {
+                    this.downloadRenamedBtn.disabled = false;
+                    this.downloadRenamedBtn.innerHTML = `
+                        <i class="fa fa-download mr-2" aria-hidden="true"></i>
+                        下载所有文件
+                    `;
+                }
+            }
+
+            resetRenamer() {
+                // 清空文件列表
+                this.renameFiles = [];
+                this.renamedFiles = [];
+                this.currentlyRenaming = false;
+                
+                // 重置UI
+                this.renameFileInput.value = '';
+                this.renameFilesGrid.innerHTML = '';
+                this.previewTableBody.innerHTML = '';
+                
+                // 隐藏区域
+                this.renameFilesList.classList.add('hidden');
+                this.renameSettings.classList.add('hidden');
+                this.renamePreview.classList.add('hidden');
+                this.renameActions.classList.add('hidden');
+                this.renameProgress.classList.add('hidden');
+                this.renameResults.classList.add('hidden');
+                
+                // 重置设置
+                this.filePrefix.value = '';
+                this.fileSuffix.value = '';
+                this.startNumber.value = '1';
+                this.numberFormat.value = '0';
+                this.dateFormat.value = '';
+                this.preserveOriginalName.checked = false;
+                
+                // 重置计数
+                this.updateRenameFileCount();
+            }
+
+            showNotification(message, type = 'info') {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full`;
+                
+                // 根据类型设置样式
+                switch (type) {
+                    case 'success':
+                        notification.classList.add('bg-green-500', 'text-white');
+                        notification.innerHTML = `<div class="flex items-center space-x-2"><i class="fa fa-check-circle" aria-hidden="true"></i><span>${message}</span></div>`;
+                        break;
+                    case 'error':
+                        notification.classList.add('bg-red-500', 'text-white');
+                        notification.innerHTML = `<div class="flex items-center space-x-2"><i class="fa fa-exclamation-circle" aria-hidden="true"></i><span>${message}</span></div>`;
+                        break;
+                    case 'warning':
+                        notification.classList.add('bg-yellow-500', 'text-white');
+                        notification.innerHTML = `<div class="flex items-center space-x-2"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i><span>${message}</span></div>`;
+                        break;
+                    default:
+                        notification.classList.add('bg-blue-500', 'text-white');
+                        notification.innerHTML = `<div class="flex items-center space-x-2"><i class="fa fa-info-circle" aria-hidden="true"></i><span>${message}</span></div>`;
+                }
+                
+                document.body.appendChild(notification);
+                
+                // 显示通知
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+                
+                // 隐藏通知
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // 初始化批量改名工具
+        document.addEventListener('DOMContentLoaded', () => {
+            new BatchRenamer();
+        });
+    </script>
+</body>
+</html>
